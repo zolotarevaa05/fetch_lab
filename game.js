@@ -1,6 +1,6 @@
 const MODS=[
 {id:"live",icon:"◉",name:"Живой запрос",title:"Живой запрос",desc:"Проследи путь запроса от действия пользователя до обновления страницы."},
-{id:"route",icon:"↔",name:"Собери маршрут",title:"Собери путь данных",desc:"Перетаскивай этапы и запускай собранную модель."},
+{id:"route",icon:"↔",name:"Собери маршрут",title:"Собери путь данных",desc:"Расставь этапы в правильном порядке и запусти модель."},
 {id:"code",icon:"</>",name:"Собери код",title:"Восстанови программу",desc:"Порядок строк имеет значение."},
 {id:"http",icon:"⇄",name:"HTTP Lab",title:"HTTP-конструктор",desc:"Подбери метод под действие с ресурсом."},
 {id:"status",icon:"#",name:"HTTP-статусы",title:"HTTP-статусы",desc:"Разбери, чем закончился запрос: 2xx, 4xx или 5xx."},
@@ -58,7 +58,126 @@ function openMod(id){
   if(__mod && readSession().started===true) saveSession({module:__mod});
 current=id;let m=MODS.find(x=>x.id===id);$("#title").textContent=m.title;$("#desc").textContent=m.desc;nav();R[id]()}
 function typeText(el,text,speed=13,cb){el.textContent="";el.classList.add("cursor");let i=0;let timer=setInterval(()=>{el.textContent+=text[i++]||"";if(i>text.length){clearInterval(timer);el.classList.remove("cursor");cb&&cb()}},speed);el.dataset.timer=timer;return timer}
-function dnd(scope=document){let d=null;scope.querySelectorAll(".drag").forEach(e=>{e.draggable=true;e.ondragstart=()=>d=e});scope.querySelectorAll(".drop").forEach(z=>{z.ondragover=e=>{e.preventDefault();z.classList.add("over")};z.ondragleave=()=>z.classList.remove("over");z.ondrop=e=>{e.preventDefault();z.classList.remove("over");if(d)z.appendChild(d);d=null}})}
+// Touch + mouse + keyboard support for all card-ordering exercises.
+// A tap selects a card; a tap on an empty/occupied position places or swaps it.
+// Dragging remains available with a mouse and by holding/moving a finger.
+function dnd(scope=document){
+  const cards=[...scope.querySelectorAll('.drag')];
+  const zones=[...scope.querySelectorAll('.drop')];
+  let selected=null, moving=null, ghost=null, dragStart=null, dragMoved=false;
+  const bank=scope.querySelector('.bank.drop');
+  const isBank=z=>z?.classList.contains('bank');
+  const zoneOf=e=>e?.parentElement?.closest('.drop');
+  const clearMarks=()=>{scope.querySelectorAll('.answerBad,.answerGood').forEach(e=>e.classList.remove('answerBad','answerGood'))};
+  const clearSelected=()=>{
+    cards.forEach(c=>{c.classList.remove('cardPicked');c.setAttribute('aria-pressed','false')});
+    zones.forEach(z=>z.classList.remove('dropReady'));
+    selected=null;
+  };
+  const pick=c=>{
+    if(selected===c){clearSelected();return}
+    clearSelected(); selected=c;
+    c.classList.add('cardPicked');c.setAttribute('aria-pressed','true');
+    zones.forEach(z=>{if(z!==zoneOf(c)) z.classList.add('dropReady')});
+  };
+  const place=(card,zone)=>{
+    if(!card||!zone) return;
+    const old=zoneOf(card);
+    if(old===zone){clearSelected();return}
+    const occupant=!isBank(zone)?[...zone.children].find(el=>el.classList?.contains('drag')&&el!==card):null;
+    if(occupant){
+      // Swapping must never discard a card or create an extra card.
+      const fallback=old || bank;
+      if(fallback && fallback!==zone) fallback.appendChild(occupant);
+      else if(bank) bank.appendChild(occupant);
+    }
+    zone.appendChild(card);
+    clearMarks();clearSelected();
+  };
+  const bankInstruction='Нажми на карточку, затем на нужное место. Чтобы исправить порядок, выбери карточку и нажми другое место. Можно также перетаскивать.';
+  if(bank){
+    const hint=document.createElement('p');
+    hint.className='touchDnDHelp';hint.textContent=bankInstruction;
+    // Place instruction before the first sorting task, instead of inside the bank.
+    const container=bank.closest('.panel')||bank.parentElement;
+    const targets=container?.querySelector('.slot, #finalSlots');
+    if(targets) targets.before(hint); else bank.before(hint);
+  }
+  cards.forEach(card=>{
+    card.draggable=true;
+    card.tabIndex=0;
+    card.setAttribute('role','button');
+    card.setAttribute('aria-pressed','false');
+    card.setAttribute('aria-label',`Выбрать карточку: ${card.textContent.trim()}`);
+    card.addEventListener('click',e=>{
+      if(card.dataset.swallowClick==='1') {card.dataset.swallowClick='';return}
+      e.stopPropagation();pick(card);
+    });
+    card.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(card)}
+    });
+    card.addEventListener('dragstart',e=>{
+      moving=card;pick(card);e.dataTransfer?.setData('text/plain',card.textContent);
+      if(e.dataTransfer)e.dataTransfer.effectAllowed='move';
+    });
+    card.addEventListener('dragend',()=>{moving=null;clearSelected()});
+    // Pointer-based finger dragging: threshold avoids interfering with normal taps.
+    card.addEventListener('pointerdown',e=>{
+      if(e.pointerType==='mouse')return;
+      dragStart={card,x:e.clientX,y:e.clientY,id:e.pointerId};dragMoved=false;
+    });
+    card.addEventListener('pointermove',e=>{
+      if(!dragStart||dragStart.card!==card||e.pointerId!==dragStart.id)return;
+      if(!dragMoved&&Math.hypot(e.clientX-dragStart.x,e.clientY-dragStart.y)>13){
+        dragMoved=true;moving=card;pick(card);
+        ghost=card.cloneNode(true);ghost.classList.add('dragGhost');ghost.removeAttribute('id');
+        document.body.appendChild(ghost);
+      }
+      if(dragMoved){
+        if(e.cancelable)e.preventDefault();
+        ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px';
+        zones.forEach(z=>z.classList.remove('over'));
+        const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest('.drop');
+        if(hit && scope.contains(hit)) hit.classList.add('over');
+      }
+    },{passive:false});
+    const endPointer=e=>{
+      if(!dragStart||dragStart.card!==card||e.pointerId!==dragStart.id)return;
+      if(dragMoved){
+        const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('.drop');
+        if(target&&scope.contains(target))place(card,target);
+        else clearSelected();
+        card.dataset.swallowClick='1';
+        // In browsers that suppress click after touch dragging, don't suppress the next real tap.
+        setTimeout(()=>{card.dataset.swallowClick=''},120);
+      }
+      ghost?.remove();ghost=null;moving=null;dragStart=null;dragMoved=false;
+      zones.forEach(z=>z.classList.remove('over'));
+    };
+    card.addEventListener('pointerup',endPointer);
+    card.addEventListener('pointercancel',()=>{
+      ghost?.remove();ghost=null;moving=null;dragStart=null;dragMoved=false;
+      zones.forEach(z=>z.classList.remove('over'));
+    });
+  });
+  zones.forEach(zone=>{
+    zone.tabIndex=0;
+    zone.setAttribute('role','button');
+    zone.setAttribute('aria-label',isBank(zone)?'Вернуть карточку в набор':'Поместить выбранную карточку сюда');
+    zone.addEventListener('click',()=>{if(selected)place(selected,zone)});
+    zone.addEventListener('keydown',e=>{
+      if((e.key==='Enter'||e.key===' ')&&selected){e.preventDefault();place(selected,zone)}
+    });
+    zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over')});
+    zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+    zone.addEventListener('drop',e=>{
+      e.preventDefault();zone.classList.remove('over');
+      const item=moving||selected;if(item)place(item,zone);
+      moving=null;
+    });
+  });
+}
+
 function xray(step){let names=["click","JavaScript","fetch()","Promise pending","HTTP Request","PHP","данные","JSON Response","response.json()","data","DOM"];return `<div class="xray">${names.map((n,i)=>`<div class="xitem ${i<step?'done':''} ${i===step?'now':''}">${i<step?"✓":i===step?"●":"○"} ${n}</div>`).join("")}</div>`}
 const R={};
 
@@ -66,7 +185,7 @@ R.live=()=>{
 let step=-1;
 const steps=[
  {title:"Нажата кнопка",text:"Пользователь нажал «Загрузить расписание». Браузер создаёт событие click.",line:0,state:0,net:"idle",ui:"loading"},
- {title:"JavaScript получил событие",text:"Обработчик запускает функцию loadSchedule().",line:1,state:1,net:"idle",ui:"loading",more:"Кнопка находится в HTML, а обработчик события написан в script.js."},
+ {title:"JavaScript получил событие",text:"Обработчик запускает функцию loadSchedule().",line:0,state:1,net:"idle",ui:"loading",more:"Кнопка находится в HTML, а обработчик события написан в script.js."},
  {title:"JavaScript вызвал fetch()",text:"Код вызывает fetch(\"api/schedule.php\"). Браузер готовит HTTP-запрос к реальному PHP-файлу на сервере.",line:2,state:2,net:"prepared",ui:"loading",more:"api/schedule.php — это путь к PHP-файлу в нашем учебном проекте. В отличие от абстрактного /api/schedule, здесь студент может увидеть конкретный файл."},
  {title:"Promise ожидает результат",text:"fetch() сразу возвращает Promise. Пока сервер не ответил, он находится в состоянии pending.",line:2,state:3,net:"pending",ui:"loading",more:"await приостанавливает только эту async-функцию и ждёт результат fetch()."},
  {title:"HTTP-запрос отправлен",text:"Браузер отправляет GET-запрос к api/schedule.php.",line:2,state:4,net:"request",ui:"loading",more:"GET означает: получить данные. Сам JavaScript к базе данных не подключается."},
@@ -302,7 +421,7 @@ $("#checkRoute").onclick=()=>{let drops=[...$("#slots").querySelectorAll(".drop"
 
 R.code=()=>{
 let correct=['const response = await fetch(url);','const data = await response.json();','render(data);'],all=['render(data);','const data = await response.json();','const response = await fetch(url);','const data = fetch.json();','await render.fetch();'];
-$("#app").innerHTML=`<div class="grid2"><div class="panel"><div class="top"><h2>Собери loadData()</h2><span class="tag">DRAG & DROP</span></div><div class="code">async function loadData(url) {</div><div id="codeSlots">${correct.map((_,i)=>`<div class="slot"><b>${i+1}</b><div class="drop"></div></div>`).join("")}</div><div class="code">}</div><div class="bank drop">${all.map(x=>`<div class="drag">${x}</div>`).join("")}</div><div class="actions"><button id="runCode" class="btn primary">▶ Запустить</button></div><div id="cf" class="feedback"></div></div><div class="panel"><h3>Результат</h3><div id="console" class="dev">CONSOLE\nReady.</div><div class="browser" style="margin-top:12px"><div class="browserbar">preview</div><div id="preview" class="browserbody">Данные не загружены.</div></div></div></div>`;dnd($("#app"));
+$("#app").innerHTML=`<div class="grid2"><div class="panel"><div class="top"><h2>Собери loadData()</h2><span class="tag">СОБЕРИ ПО ПОРЯДКУ</span></div><div class="code">async function loadData(url) {</div><div id="codeSlots">${correct.map((_,i)=>`<div class="slot"><b>${i+1}</b><div class="drop"></div></div>`).join("")}</div><div class="code">}</div><div class="bank drop">${all.map(x=>`<div class="drag">${x}</div>`).join("")}</div><div class="actions"><button id="runCode" class="btn primary">▶ Запустить</button></div><div id="cf" class="feedback"></div></div><div class="panel"><h3>Результат</h3><div id="console" class="dev">CONSOLE\nReady.</div><div class="browser" style="margin-top:12px"><div class="browserbar">preview</div><div id="preview" class="browserbody">Данные не загружены.</div></div></div></div>`;dnd($("#app"));
 $("#runCode").onclick=()=>{let got=[...$("#codeSlots").querySelectorAll(".drop")].map(z=>z.querySelector(".drag")?.textContent||""),ok=correct.every((x,i)=>x===got[i]);$("#cf").className="feedback "+(ok?"good":"bad");if(ok){$("#cf").textContent="Код собран правильно.";$("#console").textContent="GET api/schedule.php → 200 OK\nJSON parsed ✓\nrender(data) ✓";$("#preview").innerHTML='<b>Данные получены</b><div class="card">Группа 3519/1 · кабинет 305</div>';complete("code")}else{S.errors++;save();$("#cf").textContent="Проверь причинную последовательность: получить Response → разобрать тело → показать данные.";$("#console").textContent="SequenceError: неверный порядок операций."}}
 };
 
@@ -343,10 +462,10 @@ $("#respCheck").onclick=()=>{let zones=[...document.querySelectorAll("[data-r]")
 };
 
 R.promise=()=>{
-$("#app").innerHTML=`<div class="panel"><h2>Запусти три запроса одновременно</h2><p>Все три запроса стартуют в один момент. Смотри, какой ответ придёт раньше, пока остальные ещё выполняются.</p><button id="startP" class="btn primary">▶ Запустить</button><div class="asyncClock"><b id="asyncTime">0.0 с</b><span>общее время</span></div><div class="asyncScale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>1.8 с</span></div><div id="plist" class="asyncList">${[["Расписание","schedule.php","1.1"],["Студенты","students.php","0.5"],["Преподаватели","teachers.php","1.8"]].map((x,i)=>`<div class="asyncRow"><div><b>${x[0]}</b><small>${x[1]}</small></div><div class="asyncTrack"><i id="bar${i}"></i></div><strong id="state${i}">не запущен</strong></div>`).join("")}</div><div id="pguide" class="stepExplain">Нажми «Запустить». Все полосы начнут двигаться одновременно.</div></div><div class="panel"><h3>Что здесь показывает асинхронность?</h3><div id="asyncOrder" class="asyncOrder"><p>После запуска здесь появится порядок получения ответов.</p></div><div class="code">const students = fetch("api/students.php");
+$("#app").innerHTML=`<div class="panel"><h2>Запусти три запроса одновременно</h2><p>Все три запроса стартуют в один момент. Смотри, какой ответ придёт раньше, пока остальные ещё выполняются.</p><button id="startP" class="btn primary">▶ Запустить</button><div class="asyncClock"><b id="asyncTime">0.0 с</b><span>общее время</span></div><div class="asyncScale"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>1.8 с</span></div><div id="plist" class="asyncList">${[["Студенты","students.php","0.5"],["Расписание","schedule.php","1.1"],["Преподаватели","teachers.php","1.8"]].map((x,i)=>`<div class="asyncRow"><div><b>${x[0]}</b><small>${x[1]}</small></div><div class="asyncTrack"><i id="bar${i}"></i></div><strong id="state${i}">не запущен</strong></div>`).join("")}</div><div id="pguide" class="stepExplain">Нажми «Запустить». Все полосы начнут двигаться одновременно.</div></div><div class="panel"><h3>Что здесь показывает асинхронность?</h3><div id="asyncOrder" class="asyncOrder"><p>После запуска здесь появится порядок получения ответов.</p></div><div class="code">const students = fetch("api/students.php");
 const schedule = fetch("api/schedule.php");
 const teachers = fetch("api/teachers.php");</div><p>JavaScript запустил все три операции, не дожидаясь завершения предыдущей. Каждый Promise завершается в своё время.</p></div>`;
-$("#startP").onclick=()=>{let start=performance.now(),dur=[1100,500,1800],names=["students.php","schedule.php","teachers.php"],done=[];$("#startP").disabled=true;[0,1,2].forEach(i=>{$(`#state${i}`).textContent="pending…";$(`#bar${i}`).style.transition=`width ${dur[i]}ms linear`;$(`#bar${i}`).style.width="0%";requestAnimationFrame(()=>requestAnimationFrame(()=>{$(`#bar${i}`).style.width="100%"}))});$("#pguide").textContent="Три запроса уже выполняются одновременно. Следи: короткая полоса завершится, пока длинные ещё движутся.";let clock=setInterval(()=>{$("#asyncTime").textContent=Math.min((performance.now()-start)/1000,1.8).toFixed(1)+" с"},50);dur.forEach((d,i)=>setTimeout(()=>{done.push(`${done.length+1}. ${names[i]} — ${(d/1000).toFixed(1)} с`);$(`#state${i}`).textContent=`✓ fulfilled · ${(d/1000).toFixed(1)} с`;$("#asyncOrder").innerHTML=`<b>Ответы приходят независимо:</b>${done.map(x=>`<div>${x}</div>`).join("")}`;let left=3-done.length;$("#pguide").textContent=left?`Ответ от ${names[i]} уже получен. Ещё ${left} ${left===1?"запрос продолжает":"запроса продолжают"} выполняться.`:"Все ответы получены. Они стартовали вместе, но завершились в разное время.";if(i===2){clearInterval(clock);$("#asyncTime").textContent="1.8 с";$("#startP").disabled=false;setTimeout(()=>complete("promise"),500)}},d))}
+$("#startP").onclick=()=>{let start=performance.now(),dur=[500,1100,1800],names=["students.php","schedule.php","teachers.php"],done=[];$("#startP").disabled=true;[0,1,2].forEach(i=>{$(`#state${i}`).textContent="pending…";$(`#bar${i}`).style.transition=`width ${dur[i]}ms linear`;$(`#bar${i}`).style.width="0%";requestAnimationFrame(()=>requestAnimationFrame(()=>{$(`#bar${i}`).style.width="100%"}))});$("#pguide").textContent="Три запроса уже выполняются одновременно. Следи: короткая полоса завершится, пока длинные ещё движутся.";let clock=setInterval(()=>{$("#asyncTime").textContent=Math.min((performance.now()-start)/1000,1.8).toFixed(1)+" с"},50);dur.forEach((d,i)=>setTimeout(()=>{done.push(`${done.length+1}. ${names[i]} — ${(d/1000).toFixed(1)} с`);$(`#state${i}`).textContent=`✓ fulfilled · ${(d/1000).toFixed(1)} с`;$("#asyncOrder").innerHTML=`<b>Ответы приходят независимо:</b>${done.map(x=>`<div>${x}</div>`).join("")}`;let left=3-done.length;$("#pguide").textContent=left?`Ответ от ${names[i]} уже получен. Ещё ${left} ${left===1?"запрос продолжает":"запроса продолжают"} выполняться.`:"Все ответы получены. Они стартовали вместе, но завершились в разное время.";if(i===2){clearInterval(clock);$("#asyncTime").textContent="1.8 с";$("#startP").disabled=false;setTimeout(()=>complete("promise"),500)}},d))}
 };
 
 R.break=()=>{

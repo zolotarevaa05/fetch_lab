@@ -214,3 +214,213 @@ body{font-size:18px} main{max-width:1500px} p,.mut,.guideBody,.feedback{font-siz
   font:15px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 .taskInstruction{font-size:17px;line-height:1.55;margin:13px 0 12px}
+
+/* ======================================================
+   FETCH LAB 3.4 — MOBILE & TABLET
+   Адаптация интерфейса без изменения HTML и JavaScript.
+   ====================================================== */
+
+/* Prevent long code, URLs and grids from widening the viewport. */
+html,body{max-width:100%;overflow-x:clip}
+main,#app,.panel,.grid2,.grid3,.finalGrid,
+.grid2>*,.grid3>*,.finalGrid>*,.liveColumns>*,
+.phpFlow>*,.stackFlow>*{min-width:0}
+pre,.code,.dev,.guideBody,.phpCode,.projectTree,.liveCode,
+.browser,.netCard,.responseParts,.networkTable{max-width:100%}
+pre,.code,.dev,.phpCode,.projectTree{overflow-x:auto;overflow-wrap:normal}
+button,input,textarea{max-width:100%}
+button{touch-action:manipulation}
+
+@media (max-width:1100px){
+  main{width:calc(100% - 36px)}
+  .grid3,.finalGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid3>.panel:last-child,.finalGrid>.panel:last-child{grid-column:1/-1}
+  .liveColumns,.grid2,.phpFlow{grid-template-columns:minmax(0,1fr)}
+  .statusCards,.statusChoices{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .asyncRow{grid-template-columns:150px minmax(0,1fr) 120px}
+  .asyncScale{margin-left:166px;margin-right:136px}
+}
+
+@media (max-width:900px){
+  body{display:block;font-size:17px;min-width:0}
+  .sidebar{position:relative;top:auto;height:auto;padding:14px 15px 8px;border-right:0;border-bottom:1px solid var(--line);width:100%;overflow:hidden}
+  .brand{padding:0 4px 10px}
+  .brand b{font-size:17px}
+  .brand small{font-size:12px}
+  .sidebar nav,#nav{display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:6px;padding:10px 2px;max-width:100%;scrollbar-width:thin;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  .sidebar .nav{flex:0 0 auto;white-space:nowrap;font-size:15px;padding:11px 13px;min-height:44px;border:1px solid var(--line);background:#fff}
+  .sidebar .nav.active{border-color:#aab3f2;background:var(--accentSoft)}
+  .sidefoot{display:none}
+  main{max-width:850px;width:calc(100% - 30px);padding:20px 0 56px}
+  header{display:flex;flex-direction:column;align-items:stretch;gap:15px;margin:0 0 18px}
+  header h1{font-size:clamp(30px,5vw,43px);line-height:1.12}
+  header p{font-size:17px}
+  .stats{justify-content:flex-start;flex-wrap:wrap}
+  .stats div{min-width:94px}
+  .panel{padding:20px;border-radius:11px}
+  .grid2,.grid3,.finalGrid,.compare,.phpFlow,.statusGroups,.liveColumns{grid-template-columns:minmax(0,1fr)}
+  .grid3>.panel:last-child,.finalGrid>.panel:last-child{grid-column:auto}
+  .stackFlow{grid-template-columns:minmax(0,1fr)}
+  .stackFlow i{transform:rotate(90deg)}
+  /* Keep real request movement visible: scroll horizontally rather than hiding packets. */
+  .insideSection{min-width:0}
+  .systemFlow{grid-template-columns:145px minmax(215px,1fr) 145px;min-width:555px;gap:12px;padding:18px 4px 15px}
+  .flowLane{height:78px;min-width:215px}
+  .flowPacket,.networkPacket{display:block}
+  .networkPacket{font-size:12px;padding:6px 8px}
+  .insideSection:has(.systemFlow){overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .scheduleDemo{max-width:100%}
+  .asyncScale{margin-left:0;margin-right:0}
+  .asyncRow{grid-template-columns:minmax(0,1fr);gap:6px}
+  .asyncTrack{width:100%;height:17px}
+  .asyncRow>strong{justify-self:end;font-size:15px;line-height:1.35;min-height:21px}
+  .asyncRow>div:first-child{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .asyncClock{margin:18px 0 10px}
+  .debugQuestionNav,.taskNav{flex-wrap:wrap}
+  .debugMove,.processActions,.responseBox{flex-wrap:wrap;gap:12px}
+  .networkTable{table-layout:auto;font-size:15px}
+  .networkTable th,.networkTable td{padding:12px 9px}
+  .certificate{padding:45px 24px;min-height:570px}
+  .certificate h1{font-size:clamp(38px,8vw,60px)}
+  .certMeta{gap:14px;flex-wrap:wrap}
+}
+
+@media (max-width:600px){
+  html{-webkit-text-size-adjust:100%}
+  body{font-size:16px;line-height:1.5}
+  main{width:calc(100% - 24px);padding:16px 0 46px}
+  .sidebar{padding:11px 12px 6px}
+  .brand .bolt{font-size:19px}
+  .brand b{font-size:16px}
+  .brand small{font-size:11px}
+  header{margin-bottom:15px}
+  header h1{font-size:clamp(29px,8vw,38px);overflow-wrap:anywhere}
+  header p{font-size:16px}
+  .stats div{padding:6px 12px;min-width:86px}
+  .stats b{font-size:20px}
+  .panel{padding:16px 14px;margin-bottom:12px}
+  .panel h2,.userView h2,.insideSection h2,.liveColumns h2,.processPanel h2{font-size:clamp(22px,6vw,27px);margin-bottom:12px}
+  .panel h3{font-size:20px}
+  .grid2,.grid3,.finalGrid,.liveColumns,.statusLab{gap:12px}
+  .btn,.ghost,.methodBtn,.startButton,.continueButton{min-height:46px;font-size:16px;white-space:normal}
+  .actions{gap:9px}
+  .actions>.btn,.actions>.ghost{flex:0 1 auto}
+  .processActions{display:flex;align-items:stretch;flex-wrap:wrap}
+  .processActions>*{flex:1 1 135px}
+  .welcome{padding:20px 17px;overflow-y:auto;place-items:center}
+  .welcomeInner{padding:15px 0}
+  .welcomeMark{width:50px;height:50px;margin-bottom:19px}
+  .welcome h1{font-size:clamp(45px,12vw,61px)}
+  .welcome h2{font-size:clamp(23px,6vw,28px);line-height:1.2}
+  .welcomeLead{font-size:17px;line-height:1.5}
+  .welcome code{font-size:16px}
+  .startButton,.continueButton{width:min(100%,330px)}
+  .welcomePath{flex-wrap:wrap;gap:8px}
+  .liveIntro{font-size:17px;margin:0 0 15px}
+  .scheduleDemo{padding:15px}
+  .scheduleTop{font-size:20px}
+  .scheduleState{font-size:16px}
+  .liveCode{font-size:14px;line-height:1.6}
+  .liveCodeLine{padding:2px 10px}
+  .liveExplain{font-size:17px;line-height:1.55;min-height:0}
+  .liveMore,.processItem{font-size:16px}
+  .guideBody,.code,.dev,.phpCode,.projectTree{font-size:14px;line-height:1.55}
+  .netRows>div{grid-template-columns:minmax(82px,0.7fr) minmax(0,1.3fr);gap:7px;font-size:14px}
+  .netRows code{font-size:13px;overflow-wrap:anywhere}
+  .networkDetail{margin-top:12px}
+  .netCard{padding:13px}
+  .systemFlow{margin:0}
+  .httpMethods{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .methodBtn{padding:11px 7px}
+  .httpFlight{grid-template-columns:65px minmax(0,1fr) 65px;gap:7px}
+  .httpPoint{font-size:13px;overflow-wrap:anywhere}
+  .statusGroups{grid-template-columns:minmax(0,1fr)}
+  .statusCards,.statusChoices{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .statusCard,.statusChoice{padding:13px 10px;min-width:0}
+  .statusCard b,.statusChoice b{font-size:23px}
+  .statusCard span,.statusChoice span{font-size:14px;overflow-wrap:anywhere}
+  .statusSituation{font-size:19px;padding:14px;margin:10px 0}
+  .statusInfo{align-items:flex-start;gap:12px;padding:13px}
+  .responseBox{align-items:flex-start;padding:14px}
+  .responseParts>div,.jsObject{flex-wrap:wrap;gap:8px;padding:13px}
+  .responseParts pre,.jsObject pre,.netCard pre{font-size:13px}
+  .asyncClock b{font-size:26px}
+  .asyncScale{font-size:11px;gap:4px}
+  .asyncScale span{white-space:nowrap}
+  .asyncList{gap:15px;margin-top:18px}
+  .asyncRow>div:first-child{display:flex}
+  .stepExplain{font-size:17px;padding:15px;margin-top:17px;min-height:0}
+  .asyncOrder{padding:14px;margin:11px 0}
+  .bigDev{font-size:14px;min-width:0;overflow-x:auto}
+  .devtabs{overflow-x:auto}
+  .devtab{font-size:16px;padding:9px 12px}
+  .devPane{overflow-x:auto;padding:12px 0;-webkit-overflow-scrolling:touch}
+  .networkTable{min-width:355px;font-size:13px}
+  .networkTable th,.networkTable td{padding:10px 7px}
+  .diagnosis{font-size:17px;line-height:1.55}
+  .debugExplanation{font-size:16px;padding:12px}
+  .debugQuestionNav{gap:8px}
+  .debugQ{width:45px;height:45px;font-size:16px}
+  .debugMove{gap:9px}
+  .practiceHead{gap:10px;align-items:flex-start}
+  .practiceHead h2{margin:0 0 8px}
+  .practiceHead p{font-size:15px;margin:0}
+  .practiceProgress{flex:0 0 auto}
+  .practiceProgress b{font-size:24px}
+  .practiceProgress span{font-size:12px}
+  .taskNav{gap:7px;margin:12px 0}
+  .taskDot{min-width:45px;height:44px;font-size:16px;cursor:pointer}
+  .editor,.largeEditor{font-size:16px;line-height:1.5;min-height:280px;padding:12px;tab-size:2}
+  .taskContext{padding:12px;font-size:16px;line-height:1.5}
+  .taskContext pre{font-size:13px}
+  .taskInstruction{font-size:16px}
+  .testList{font-size:16px;gap:8px}
+  .testList>div{padding:10px 11px;overflow-wrap:anywhere}
+  .slot{grid-template-columns:25px minmax(0,1fr)}
+  .drag{font-size:16px;max-width:100%;overflow-wrap:anywhere}
+  .routeRun{gap:7px;font-size:15px}
+  .routeRun span{padding:7px 9px}
+  .certificatePage{width:100%}
+  .certificate{padding:32px 13px;min-height:520px}
+  .certificate h1{font-size:clamp(35px,10vw,48px);letter-spacing:.04em}
+  .certificate h2{font-size:20px;overflow-wrap:anywhere}
+  .certificate input{font-size:18px;width:100%}
+  .certMeta{margin-top:34px;font-size:13px}
+  #toast{width:calc(100% - 30px);max-width:380px;text-align:center;bottom:12px;font-size:15px}
+}
+
+@media (max-width:380px){
+  .panel{padding:13px 11px}
+  .stats div{min-width:76px}
+  .statusCards,.statusChoices{gap:6px}
+  .debugQ,.taskDot{width:43px;min-width:43px}
+  .asyncScale{font-size:10px}
+}
+
+/* The print layout must remain A4-friendly even on a mobile device. */
+@media print{
+  html,body{overflow:visible!important}
+  .welcome{display:none!important}
+  .certificatePage{max-width:none!important}
+  .certificate{padding:45px!important;min-height:90vh!important}
+}
+
+/* 3.5 mobile interaction layer (sorting tasks) */
+.touchDnDHelp{padding:12px 14px;margin:12px 0 14px;background:#eef0ff;border-left:3px solid #5667d8;border-radius:5px;color:#334155;font-size:16px;line-height:1.5}
+.drag{touch-action:pan-y;cursor:grab;transition:border-color .12s,background .12s}
+.drag.cardPicked{background:#e7eaff!important;border:2px solid #384ac4!important;color:#2839ac!important;box-shadow:0 0 0 2px #c9ceff;cursor:grabbing}
+.drop.dropReady{border:2px dashed #6977df;background:#f4f5ff;min-height:55px}
+.drop.over{border:2px solid #354acb!important;background:#edf0ff!important}
+.dragGhost{position:fixed!important;transform:translate(-50%,-55%);margin:0!important;pointer-events:none!important;z-index:10000;opacity:.95;max-width:min(290px,75vw);box-shadow:0 6px 20px #1d243026;touch-action:none}
+.drag:focus-visible,.drop:focus-visible{outline:3px solid #384ac4;outline-offset:2px}
+@media(max-width:900px){.touchDnDHelp{font-size:16px}}
+@media(max-width:600px){
+  .touchDnDHelp{font-size:15px;padding:11px 12px}
+  .drop{min-height:52px;padding:8px}
+  .bank.drop{gap:9px;padding:12px}
+  .drag{padding:12px 13px;min-height:43px;display:flex;align-items:center}
+  #slots,#codeSlots,#finalSlots{scroll-margin-top:14px}
+  .slot{align-items:stretch}
+  .taskNav .taskDot.solved{background:#2f855a!important;border-color:#2f855a!important;color:#fff!important}
+}
+@media (pointer:coarse){.drag{touch-action:pan-y}}
