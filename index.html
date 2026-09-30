@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FETCH LAB 2.0</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="welcome" class="welcome">
+  <div class="welcomeInner">
+    <div class="welcomeMark">&lt;/&gt;</div>
+    <h1>FETCH LAB</h1>
+    <h2>Как JavaScript получает данные с сервера</h2>
+    <p class="welcomeLead">Интерактивный тренажёр по работе <code>fetch()</code>, HTTP-запросов и ответов сервера.</p>
+    <button id="startLearning" class="startButton">Начать обучение</button>
+  </div>
+</div>
+
+<aside class="sidebar">
+  <div class="brand"><div class="bolt">⚡</div><div><b>FETCH LAB 2.0</b><small>JavaScript · Client ↔ Server</small></div></div>
+  <nav id="nav"></nav>
+  <div class="sidefoot">
+    <div class="row"><span>Прогресс</span><b id="progressText">0%</b></div>
+    <div class="bar"><i id="progressBar"></i></div>
+    <button id="resetAll" class="ghost tiny">Сбросить прогресс</button>
+  </div>
+</aside>
+
+<main>
+<header>
+  <div>
+    <h1 id="title">Живой запрос</h1>
+    <p id="desc">Посмотри, что происходит между кликом и появлением данных.</p>
+  </div>
+  <div class="stats"><div><b id="score">0</b><small>баллов</small></div><div><b id="done">0</b><small>модулей</small></div></div>
+</header>
+<section id="app"></section>
+</main>
+<div id="toast"></div>
+<script src="game.js"></script>
+</body>
+</html>
