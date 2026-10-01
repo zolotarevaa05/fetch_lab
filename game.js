@@ -185,7 +185,7 @@ R.live=()=>{
 let step=-1;
 const steps=[
  {title:"Нажата кнопка",text:"Пользователь нажал «Загрузить расписание». Браузер создаёт событие click.",line:0,state:0,net:"idle",ui:"loading"},
- {title:"JavaScript получил событие",text:"Обработчик запускает функцию loadSchedule().",line:0,state:1,net:"idle",ui:"loading",more:"Кнопка находится в HTML, а обработчик события написан в script.js."},
+ {title:"JavaScript получил событие",text:"Обработчик запускает функцию loadSchedule().",line:1,state:1,net:"idle",ui:"loading",more:"Кнопка находится в HTML, а обработчик события написан в script.js."},
  {title:"JavaScript вызвал fetch()",text:"Код вызывает fetch(\"api/schedule.php\"). Браузер готовит HTTP-запрос к реальному PHP-файлу на сервере.",line:2,state:2,net:"prepared",ui:"loading",more:"api/schedule.php — это путь к PHP-файлу в нашем учебном проекте. В отличие от абстрактного /api/schedule, здесь студент может увидеть конкретный файл."},
  {title:"Promise ожидает результат",text:"fetch() сразу возвращает Promise. Пока сервер не ответил, он находится в состоянии pending.",line:2,state:3,net:"pending",ui:"loading",more:"await приостанавливает только эту async-функцию и ждёт результат fetch()."},
  {title:"HTTP-запрос отправлен",text:"Браузер отправляет GET-запрос к api/schedule.php.",line:2,state:4,net:"request",ui:"loading",more:"GET означает: получить данные. Сам JavaScript к базе данных не подключается."},
